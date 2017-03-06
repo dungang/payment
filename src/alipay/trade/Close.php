@@ -23,6 +23,11 @@ use dungang\payment\alipay\Payment;
  */
 class Close extends Payment
 {
+    public $response = [
+        'out_trade_no', //商户订单号
+        'trade_no' //支付宝交易号
+    ];
+
     public function init()
     {
         parent::init();

@@ -38,6 +38,23 @@ use dungang\payment\alipay\Payment;
  */
 class Pay extends Payment
 {
+    public $response = [
+        'trade_no', //支付宝交易号
+        'out_trade_no', //商家订单号
+        'buyer_logon_id', //买家支付宝账号
+        'total_amount', //交易的订单金额，单位为元，两位小数。该参数的值为支付时传入的total_amount
+        'receipt_amount', //实收金额，单位为元，两位小数。该金额为本笔交易，商户账户能够实际收到的金额
+        'buyer_pay_amount', //买家实付金额，单位为元，两位小数。该金额代表该笔交易买家实际支付的金额，不包含商户折扣等金额
+        'point_amount', //积分支付的金额，单位为元，两位小数。该金额代表该笔交易中用户使用积分支付的金额，比如集分宝或者支付宝实时优惠等
+        'invoice_amount', //交易中用户支付的可开具发票的金额，单位为元，两位小数。该金额代表该笔交易中可以给用户开具发票的金额
+        'gmt_payment', //交易支付时间
+        'fund_bill_list', //交易支付使用的资金渠道
+        'card_balance',//支付宝卡余额
+        'store_name', //请求交易支付中的商户店铺的名称
+        'buyer_user_id', //买家在支付宝的用户id
+        'discount_goods_detail', //本次交易支付所使用的单品券优惠的商品优惠信息
+        'voucher_detail_list' //本交易支付时使用的所有优惠券信息
+    ];
     public function init(){
         parent::init();
         $this->method = 'alipay.trade.pay';

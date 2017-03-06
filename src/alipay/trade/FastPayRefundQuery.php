@@ -21,6 +21,15 @@ use dungang\payment\alipay\Payment;
  */
 class FastPayRefundQuery extends Payment
 {
+    public $response = [
+        'trade_no', //支付宝交易号
+        'out_trade_no', //创建交易传入的商户订单号
+        'out_request_no', //本笔退款对应的退款请求号
+        'refund_reason', //发起退款时，传入的退款原因
+        'total_amount', //该笔退款所对应的交易的订单金额
+        'refund_amount' //本次退款请求，对应的退款金额
+    ];
+
     public function init()
     {
         parent::init();

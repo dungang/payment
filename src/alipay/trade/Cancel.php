@@ -20,6 +20,12 @@ use dungang\payment\alipay\Payment;
  */
 class Cancel extends Payment
 {
+    public $response = [
+        'trade_no', //支付宝交易号
+        'out_trade_no', //商户订单号
+        'retry_flag', //是否需要重试
+        'action' //本次撤销触发的交易动作 close：关闭交易，无退款 refund：产生了退款
+    ];
     public function init()
     {
         parent::init();

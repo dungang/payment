@@ -9,7 +9,6 @@
 namespace dungang\payment;
 
 
-use yii\base\Exception;
 
 abstract class API
 {
@@ -47,7 +46,7 @@ abstract class API
 
     public function __set($name,$value){
         if ($name == '_attributes') {
-            throw new Exception('property ' . $name . ' is protected');
+            throw new PaymentException('property ' . $name . ' is protected');
         }
         if (property_exists($this,$name)) {
             $this->$name = $value;
@@ -96,11 +95,11 @@ abstract class API
      * @param $data string
      * @param $signType string
      * @return string
-     * @throws Exception
+     * @throws PaymentException
      */
     public function openSSLSign($data,$signType='RSA') {
         if (file_exists($this->privateKeyPath)) {
-            throw new Exception('Payment Private key  not found');
+            throw new PaymentException('Payment Private key  not found');
         }
         $keyContent = file_get_contents($this->privateKeyPath);
         if ($res = openssl_get_privatekey($keyContent)) {
@@ -112,7 +111,7 @@ abstract class API
             openssl_free_key($res);
             return base64_encode($sign);
         }
-        throw new Exception('Payment private key bad format');
+        throw new PaymentException('Payment private key bad format');
     }
 
     /**
@@ -120,7 +119,7 @@ abstract class API
      * @param $charset
      * @param bool $post
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function curl($url,$charset,$post=true) {
         $ch = curl_init();
@@ -135,11 +134,11 @@ abstract class API
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
-            throw new Exception(curl_error($ch), 0);
+            throw new \Exception(curl_error($ch), 0);
         } else {
             $httpStatusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (200 !== $httpStatusCode) {
-                throw new Exception($response, $httpStatusCode);
+                throw new \Exception($response, $httpStatusCode);
             }
         }
         curl_close($ch);

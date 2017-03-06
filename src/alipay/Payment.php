@@ -10,6 +10,7 @@ namespace dungang\payment\alipay;
 
 
 use dungang\payment\API;
+use dungang\payment\PaymentException;
 
 /**
  * Class Payment
@@ -29,8 +30,25 @@ use dungang\payment\API;
  */
 abstract class Payment extends API
 {
+    const WAIT_BUYER_PAY = 'WAIT_BUYER_PAY'; //交易创建，等待买家付款
+    const TRADE_CLOSE = 'TRADE_CLOSE';  //未付款交易超时关闭，或支付完成后全额退款
+    const TRADE_SUCCESS = 'TRADE_SUCCESS'; //交易支付成功
+    const TRADE_FINISHED = 'TRADE_FINISHED'; //交易结束，不可退款
+
+    /**
+     * @var array response params
+     */
+    public $responseParams = [];
+
     public function init()
     {
+        $this->responseParams = array_merge([
+            'code', //网关返回码,详见文档
+            'msg', //网关返回码描述,详见文档
+            'sub_code', //业务返回码,详见文档
+            'sub_msg', //业务返回码描述,详见文档
+            'sign' //签名,详见文档
+        ],$this->responseParams);
         $this->apiGate = 'https://openapi.alipay.com/gateway.do';
         $this->format = 'json';
         $this->charset = 'utf-8';
@@ -39,16 +57,92 @@ abstract class Payment extends API
         $this->timestamp = date("Y-m-d H:i:s");
     }
 
+    /**
+     * @return mixed
+     * @throws PaymentException
+     */
     public function call()
     {
-        $result = $this->curl($this->apiGate,$this->charset);
-        return json_decode($result);
+        $response = $this->curl($this->apiGate,$this->charset);
+        $response_key = str_replace('.','_',$this->method) . '_response';
+        $response = json_decode($response);
+        if (empty($response[$response_key])) {
+            throw new PaymentException('Response is empty!');
+        }
+        return $response[$response_key];
     }
 
+    /**
+     * 签名
+     */
     public function sign()
     {
         $params = $this->getAttributes();
         if (isset($params['sign'])) unset($params['sign']);
+        $params = array_filter($params,function($item){
+            return !is_numeric($item) && !empty($item);
+        });
+        ksort($params);
+        array_map([$this,'convertCharset'],$params);
         $this->sign = $this->openSSLSign(http_build_query($params),$this->sign_type);
+    }
+
+    /**
+     * 转换字符串编码
+     * @param $string
+     * @return mixed|string
+     */
+    public function convertCharset($string)
+    {
+        return mb_convert_encoding($string,$this->charset);
+    }
+
+    /**
+     *  验签
+     * @param array $response 通知响应结果
+     * @param bool $sync 是否同步验签
+     * @return bool
+     */
+    public function verifySign($response,$sync=true)
+    {
+        return $sync
+            ? $this->syncVerifySign($response)
+            : $this->asyncVerifySign($response);
+    }
+
+    /**
+     * 同步返回前面
+     * @param $response
+     * @return bool
+     * @throws PaymentException
+     */
+    protected function syncVerifySign($response)
+    {
+        if (isset($response['sign'])) {
+            $remote_sign = $response['sign'];
+            unset($response['sign']);
+            $local_sign = $this->openSSLSign(json_encode($response,JSON_UNESCAPED_UNICODE),$this->sign_type);
+            return strcmp($remote_sign,$local_sign)==0;
+        }
+        throw new PaymentException('Response lost sign');
+    }
+
+    /**
+     * @param $response
+     * @return bool
+     * @throws PaymentException
+     */
+    public function asyncVerifySign($response)
+    {
+        if (isset($response['sign'])) {
+            $remote_sign = $response['sign'];
+            unset($response['sign']);
+            if (isset($response['sign_type']))
+                unset($response['sign_type']);
+            ksort($response);
+            $local_sign = $this->openSSLSign(http_build_query($response),$this->sign_type);
+            return strcmp($remote_sign,$local_sign)==0;
+        }
+        throw new PaymentException('Response lost sign');
     }
 }

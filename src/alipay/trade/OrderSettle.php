@@ -22,6 +22,9 @@ use dungang\payment\alipay\Payment;
  */
 class OrderSettle extends Payment
 {
+    public $response = [
+        'trade_no' //支付宝交易号
+    ];
     public function init()
     {
         parent::init();

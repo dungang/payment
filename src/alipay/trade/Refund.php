@@ -25,6 +25,18 @@ use dungang\payment\alipay\Payment;
  */
 class Refund extends Payment
 {
+    public $response = [
+        'trade_no', //支付宝交易号
+        'out_trade_no', //商家订单号
+        'open_id', //买家支付宝用户号，该字段将废弃，不要使用
+        'buyer_logon_id', //买家支付宝账号
+        'fund_change', //本次退款是否发生了资金变化
+        'refund_fee', //退款总金额
+        'gmt_refund_pay',//退款支付时间
+        'refund_detail_item_list', //退款使用的资金渠道
+        'store_name', //请求交易支付中的商户店铺的名称
+        'buyer_user_id', //买家在支付宝的用户id
+    ];
     public function init()
     {
         parent::init();
