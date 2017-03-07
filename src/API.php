@@ -114,6 +114,11 @@ abstract class API
         throw new PaymentException('Payment private key bad format');
     }
 
+    public function executeCurl($url,$options,$headers)
+    {
+
+    }
+
     /**
      * @param $url
      * @param $charset

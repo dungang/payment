@@ -5,10 +5,7 @@
  * Time: 16:05
  */
 
-namespace dungang\payment\alipay\trade;
-
-
-use dungang\payment\alipay\Payment;
+namespace dungang\payment\alipay;
 
 /**
  * Class OrderSettle
@@ -20,9 +17,9 @@ use dungang\payment\alipay\Payment;
  * @property string $royalty_parameters 分账明细信息
  * @property string $operator_id 操作员id
  */
-class OrderSettle extends Payment
+class OrderSettle extends Base
 {
-    public $response = [
+    public $responseParams = [
         'trade_no' //支付宝交易号
     ];
     public function init()

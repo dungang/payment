@@ -28,7 +28,7 @@ use dungang\payment\PaymentException;
  * @property string $biz_content  请求参数的集合，最大长度不限，除公共参数外所有请求参数都必须放在这个参数中传递，具体参照各产品快速接入文档
  *
  */
-abstract class Payment extends API
+class Base extends API
 {
     const WAIT_BUYER_PAY = 'WAIT_BUYER_PAY'; //交易创建，等待买家付款
     const TRADE_CLOSE = 'TRADE_CLOSE';  //未付款交易超时关闭，或支付完成后全额退款
@@ -69,7 +69,14 @@ abstract class Payment extends API
         if (empty($response[$response_key])) {
             throw new PaymentException('Response is empty!');
         }
-        return $response[$response_key];
+        $result = $response[$response_key];
+        if ($this->verifySign($result)) {
+            if ($result['code'] > 10000) {
+                throw new PaymentException($result['msg']);
+            }
+            return $result;
+        }
+        throw new PaymentException('Sign not match');
     }
 
     /**

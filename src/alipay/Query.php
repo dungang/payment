@@ -5,10 +5,8 @@
  * Time: 15:31
  */
 
-namespace dungang\payment\alipay\trade;
+namespace dungang\payment\alipay;
 
-
-use dungang\payment\alipay\Payment;
 
 /**
  * Class Query
@@ -16,9 +14,9 @@ use dungang\payment\alipay\Payment;
  * @property string $out_trade_no 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
  * @property string $trade_no 支付宝交易号，和商户订单号不能同时为空
  */
-class Query extends Payment
+class Query extends Base
 {
-    public $response = [
+    public $responseParams = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商家订单号
         'open_id', //买家支付宝用户号，该字段将废弃，不要使用

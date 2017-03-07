@@ -5,10 +5,8 @@
  * Time: 16:02
  */
 
-namespace dungang\payment\alipay\trade;
+namespace dungang\payment\alipay;
 
-
-use dungang\payment\alipay\Payment;
 
 /**
  * Class Create
@@ -36,9 +34,9 @@ use dungang\payment\alipay\Payment;
  * @property string $merchant_order_no (可选)商户原始订单号，最大长度限制32位
  * @property string $notify_url 支付宝服务器主动通知商户服务器里指定的页面http/https路径
  */
-class Create extends Payment
+class Create extends Base
 {
-    public $response = [
+    public $responseParams = [
         'out_trade_no', //商户订单号
         'trade_no' //支付宝交易号
     ];

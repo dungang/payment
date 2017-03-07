@@ -5,10 +5,8 @@
  * Time: 15:45
  */
 
-namespace dungang\payment\alipay\trade;
+namespace dungang\payment\alipay;
 
-
-use dungang\payment\alipay\Payment;
 
 /**
  * Class Pay
@@ -36,9 +34,9 @@ use dungang\payment\alipay\Payment;
  * @property string $auth_no (可选)预授权号，预授权转交易请求中传入
  * @property string $notify_url 支付宝服务器主动通知商户服务器里指定的页面http/https路径
  */
-class Pay extends Payment
+class Pay extends Base
 {
-    public $response = [
+    public $responseParams = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商家订单号
         'buyer_logon_id', //买家支付宝账号

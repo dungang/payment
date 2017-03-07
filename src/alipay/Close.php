@@ -5,10 +5,8 @@
  * Time: 16:04
  */
 
-namespace dungang\payment\alipay\trade;
+namespace dungang\payment\alipay;
 
-
-use dungang\payment\alipay\Payment;
 
 /**
  * Class Close
@@ -21,9 +19,9 @@ use dungang\payment\alipay\Payment;
  * @property string $operator_id 操作员id
  * @property string $notify_url 支付宝服务器主动通知商户服务器里指定的页面http/https路径
  */
-class Close extends Payment
+class Close extends Base
 {
-    public $response = [
+    public $responseParams = [
         'out_trade_no', //商户订单号
         'trade_no' //支付宝交易号
     ];

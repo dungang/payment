@@ -5,10 +5,7 @@
  * Time: 16:01
  */
 
-namespace dungang\payment\alipay\trade;
-
-
-use dungang\payment\alipay\Payment;
+namespace dungang\payment\alipay;
 
 /**
  * Class Cancel
@@ -18,9 +15,9 @@ use dungang\payment\alipay\Payment;
  * @property string $trade_no 该交易在支付宝系统中的交易流水号。最短 16 位，最长 64 位。和out_trade_no不能同时为空，如果同时传了 out_trade_no和 trade_no，则以 trade_no为准。
  * @property string $out_trade_no 订单支付时传入的商户订单号,和支付宝交易号不能同时为空。 trade_no,out_trade_no如果同时存在优先取trade_no
  */
-class Cancel extends Payment
+class Cancel extends Base
 {
-    public $response = [
+    public $responseParams = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商户订单号
         'retry_flag', //是否需要重试

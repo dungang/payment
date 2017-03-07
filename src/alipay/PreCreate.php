@@ -5,10 +5,8 @@
  * Time: 16:00
  */
 
-namespace dungang\payment\alipay\trade;
+namespace dungang\payment\alipay;
 
-
-use dungang\payment\alipay\Payment;
 
 /**
  * Class PreCreate
@@ -34,10 +32,10 @@ use dungang\payment\alipay\Payment;
  * @property string $sub_merchant (可选)二级商户信息,当前只对特殊银行机构特定场景下使用此字段
  * @property string $notify_url 支付宝服务器主动通知商户服务器里指定的页面http/https路径
  */
-class PreCreate extends Payment
+class PreCreate extends Base
 {
 
-    public $response = [
+    public $responseParams = [
         'out_trade_no', //商户的订单号
         'qr_code' //当前预下单请求生成的二维码码串，可以用二维码生成工具根据该码串值生成对应的二维码
     ];

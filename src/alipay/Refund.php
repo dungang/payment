@@ -5,10 +5,8 @@
  * Time: 15:39
  */
 
-namespace dungang\payment\alipay\trade;
+namespace dungang\payment\alipay;
 
-
-use dungang\payment\alipay\Payment;
 
 /**
  * Class Refund
@@ -23,9 +21,9 @@ use dungang\payment\alipay\Payment;
  * @property string $terminal_id (可选)商户的终端编号
  *
  */
-class Refund extends Payment
+class Refund extends Base
 {
-    public $response = [
+    public $responseParams = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商家订单号
         'open_id', //买家支付宝用户号，该字段将废弃，不要使用
