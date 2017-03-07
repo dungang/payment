@@ -71,24 +71,25 @@ class Base extends API
 
     /**
      * @return mixed
+     * @throws PaymentException
      */
     public function call()
     {
         $options = [
-            'CURLOPT_SSL_VERIFYPEER'=>true,
-            'CURLOPT_SSL_VERIFYHOST'=>2, //严格校验
+            'CURLOPT_SSL_VERIFYPEER'=> true,
+            'CURLOPT_SSL_VERIFYHOST'=> 2, //严格校验
             'CURLOPT_HEADER'=> false,
-            'CURLOPT_RETURNTRANSFER'=>true,
+            'CURLOPT_RETURNTRANSFER'=> true,
         ];
         if ($this->use_cert) {
             $options = array_merge($options,[
-                'CURLOPT_SSL_VERIFYPEER'=>false,
+                'CURLOPT_SSL_VERIFYPEER' => false,
                 'CURLOPT_SSL_VERIFYHOST' => false,
-                'CURLOPT_SSLCERTTYPE'=>'PEM',
-                'CURLOPT_SSLCERT'=>$this->ssl_cert,
-                'CURLOPT_SSLKEYTYPE'=>'PEM',
-                'CURLOPT_SSLKEY'=>$this->ssl_key,
-                'CURLOPT_CAINFO'=>$this->ssl_ca_info
+                'CURLOPT_SSLCERTTYPE' => 'PEM',
+                'CURLOPT_SSLCERT' => $this->ssl_cert,
+                'CURLOPT_SSLKEYTYPE' => 'PEM',
+                'CURLOPT_SSLKEY' => $this->ssl_key,
+                'CURLOPT_CAINFO' => $this->ssl_ca_info
             ]);
         }
         $response = $this->request(
@@ -96,7 +97,26 @@ class Base extends API
             true,
             $this->toXML($this->sign()),
             $options);
-        return $this->parseXML($response);
+        $result =  $this->parseXML($response);
+
+        if ($this->verifySign($result)) {
+            if ($result['return_code'] == 'SUCCESS') {
+                if ($result['result_code' == 'SUCCESS']) {
+                    return $result;
+                }
+                throw new PaymentException($result['err_code_des'],$result['err_code']);
+            }
+            throw new PaymentException($result['return_msg'],$result['return_code']);
+        }
+        throw new PaymentException('Sign not match');
+
+    }
+
+
+
+    public function verifySign($result)
+    {
+        $result['appid'] = $this->appid;
     }
 
     /**

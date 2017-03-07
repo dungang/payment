@@ -40,17 +40,17 @@ class Base extends API
     /**
      * @var array response params
      */
-    protected $response_arams = [];
+    protected $response_params = [];
 
     public function init()
     {
-        $this->response_arams = array_merge([
+        $this->response_params = array_merge([
             'code', //网关返回码,详见文档
             'msg', //网关返回码描述,详见文档
             'sub_code', //业务返回码,详见文档
             'sub_msg', //业务返回码描述,详见文档
             'sign' //签名,详见文档
-        ],$this->response_arams);
+        ],$this->response_params);
         $this->api_gate = 'https://openapi.alipay.com/gateway.do';
         $this->format = 'json';
         $this->charset = 'utf-8';
