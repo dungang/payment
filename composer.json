@@ -13,7 +13,7 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "guzzlehttp/guzzle": "~6.0"
+    "php-curl-class/php-curl-class":"*"
   },
   "autoload": {
     "psr-4": {
