@@ -16,7 +16,7 @@ namespace dungang\payment\alipay;
  */
 class Query extends Base
 {
-    public $responseParams = [
+    public $response_params = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商家订单号
         'open_id', //买家支付宝用户号，该字段将废弃，不要使用

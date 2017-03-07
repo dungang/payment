@@ -17,7 +17,7 @@ namespace dungang\payment\alipay;
  */
 class Cancel extends Base
 {
-    public $responseParams = [
+    public $response_params = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商户订单号
         'retry_flag', //是否需要重试

@@ -35,13 +35,12 @@ namespace dungang\payment\alipay;
 class PreCreate extends Base
 {
 
-    public $responseParams = [
+    public $response_params = [
         'out_trade_no', //商户的订单号
         'qr_code' //当前预下单请求生成的二维码码串，可以用二维码生成工具根据该码串值生成对应的二维码
     ];
     public function init(){
         parent::init();
         $this->method = 'alipay.trade.precreate';
-        $this->notify_url = $this->notifyUrl;
     }
 }

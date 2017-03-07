@@ -16,6 +16,8 @@ use dungang\payment\PaymentException;
  * Class Payment
  * @package dungang\payment\alipay
  *
+ * @property string $rsa_key  私钥路径
+ *
  * @property string $app_id  支付宝分配给开发者的应用ID
  * @property string $method  接口名称
  * @property string $format  仅支持JSON
@@ -38,23 +40,26 @@ class Base extends API
     /**
      * @var array response params
      */
-    public $responseParams = [];
+    protected $response_arams = [];
 
     public function init()
     {
-        $this->responseParams = array_merge([
+        $this->response_arams = array_merge([
             'code', //网关返回码,详见文档
             'msg', //网关返回码描述,详见文档
             'sub_code', //业务返回码,详见文档
             'sub_msg', //业务返回码描述,详见文档
             'sign' //签名,详见文档
-        ],$this->responseParams);
-        $this->apiGate = 'https://openapi.alipay.com/gateway.do';
+        ],$this->response_arams);
+        $this->api_gate = 'https://openapi.alipay.com/gateway.do';
         $this->format = 'json';
         $this->charset = 'utf-8';
         $this->version = '1.0';
         $this->sign_type = 'RSA';
         $this->timestamp = date("Y-m-d H:i:s");
+        $this->setPrivateParams([
+            'private_key'
+        ]);
     }
 
     /**
@@ -63,7 +68,12 @@ class Base extends API
      */
     public function call()
     {
-        $response = $this->curl($this->apiGate,$this->charset);
+        $response = $this->request($this->api_gate,true,$this->sign(),[
+            'CURLOPT_FAILONERROR'=>false,
+            'CURLOPT_RETURNTRANSFER'=>true,
+            'CURLOPT_SSL_VERIFYPEER'=>false,
+        ],['content-type: application/x-www-form-urlencoded;charset=' . $this->charset]);
+
         $response_key = str_replace('.','_',$this->method) . '_response';
         $response = json_decode($response);
         if (empty($response[$response_key])) {
@@ -81,17 +91,19 @@ class Base extends API
 
     /**
      * 签名
+     * @return array
      */
     public function sign()
     {
-        $params = $this->getAttributes();
+        $params = $this->getSignParams();
         if (isset($params['sign'])) unset($params['sign']);
         $params = array_filter($params,function($item){
             return !is_numeric($item) && !empty($item);
         });
         ksort($params);
         array_map([$this,'convertCharset'],$params);
-        $this->sign = $this->openSSLSign(http_build_query($params),$this->sign_type);
+        $params['sign'] = $this->openSSLSign(http_build_query($params),$this->sign_type);
+        return $params;
     }
 
     /**
@@ -151,5 +163,28 @@ class Base extends API
             return strcmp($remote_sign,$local_sign)==0;
         }
         throw new PaymentException('Response lost sign');
+    }
+
+    /**
+     * @param $data string
+     * @param $signType string
+     * @return string
+     * @throws PaymentException
+     */
+    public function openSSLSign($data,$signType='RSA') {
+        if (file_exists($this->rsa_key)) {
+            throw new PaymentException('Payment Private key  not found');
+        }
+        $keyContent = file_get_contents($this->rsa_key);
+        if ($res = openssl_get_privatekey($keyContent)) {
+            if ('RSA2' == $signType) {
+                openssl_sign($data,$sign,$res,OPENSSL_ALGO_SHA256);
+            } else {
+                openssl_sign($data,$sign,$res);
+            }
+            openssl_free_key($res);
+            return base64_encode($sign);
+        }
+        throw new PaymentException('Payment private key bad format');
     }
 }

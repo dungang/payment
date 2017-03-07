@@ -36,7 +36,7 @@ namespace dungang\payment\alipay;
  */
 class Pay extends Base
 {
-    public $responseParams = [
+    public $response_params = [
         'trade_no', //支付宝交易号
         'out_trade_no', //商家订单号
         'buyer_logon_id', //买家支付宝账号

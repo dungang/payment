@@ -18,7 +18,7 @@ namespace dungang\payment\alipay;
  */
 class RefundQuery extends Base
 {
-    public $responseParams = [
+    public $response_params = [
         'trade_no', //支付宝交易号
         'out_trade_no', //创建交易传入的商户订单号
         'out_request_no', //本笔退款对应的退款请求号

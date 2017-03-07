@@ -9,35 +9,83 @@
 namespace dungang\payment;
 
 
-
+/**
+ * Class API
+ * @package dungang\payment
+ *
+ * @property string $api_gate 支付网关
+ * @property integer $timeout 执行超时时间，默认30s
+ */
 abstract class API
 {
-    protected $_attributes;
+    const API_CREATE = 'Create';
+    const API_CLOSE = 'Close';
+    const API_REFUND = 'Refund';
+    const API_REFUND_QUERY = 'RefundQuery';
 
     /**
-     * @var string crt 文件
+     * @var array
      */
-    public $privateKeyPath;
+    protected $_attributes = [];
 
     /**
-     * @var string 支付网关
+     * @var array http 请求除外的参数
      */
-    public $apiGate;
+    private $except_params = [];
 
-    /**
-     * @var string
-     */
-    public $notifyUrl;
 
     public function __construct($config = [])
     {
         foreach($config as $key=>$val) {
             $this->$key = $val;
         }
+        $this->timeout = 30;
+        $this->not_in_params = [
+            'api_gate',
+            'timeout',
+        ];
         $this->init();
     }
 
+    /**
+     * @param $type
+     * @param $api
+     * @param $config
+     * @return mixed
+     * @throws PaymentException
+     */
+    public static function factory($type,$api,$config){
+        $class = "dungang\\payment\\$type\\$api";
+        if (class_exists($class)) {
+            return new $class($config);
+        }
+        throw new PaymentException('API - ' . $class . ' not found');
+    }
+
     public function init(){}
+
+    /**
+     * @param array $params
+     */
+    public function setPrivateParams(array $params)
+    {
+        $this->except_params = array_merge($this->except_params,$params);
+    }
+
+    /**
+     * 获取需要签名的参数
+     * @return array
+     */
+    public function getSignParams()
+    {
+        $params = $this->getAttributes();
+        foreach($this->except_params as $name) {
+            if (isset($params[$name])) {
+                unset($params[$name]);
+            }
+        }
+        return $params;
+    }
 
     public function getAttributes()
     {
@@ -74,7 +122,8 @@ abstract class API
     }
 
     /**
-     * @return mixed
+     * 签名
+     * @return array
      */
     public abstract function sign();
 
@@ -91,52 +140,50 @@ abstract class API
         return $this->call();
     }
 
-    /**
-     * @param $data string
-     * @param $signType string
-     * @return string
-     * @throws PaymentException
-     */
-    public function openSSLSign($data,$signType='RSA') {
-        if (file_exists($this->privateKeyPath)) {
-            throw new PaymentException('Payment Private key  not found');
-        }
-        $keyContent = file_get_contents($this->privateKeyPath);
-        if ($res = openssl_get_privatekey($keyContent)) {
-            if ('RSA2' == $signType) {
-                openssl_sign($data,$sign,$res,OPENSSL_ALGO_SHA256);
-            } else {
-                openssl_sign($data,$sign,$res);
-            }
-            openssl_free_key($res);
-            return base64_encode($sign);
-        }
-        throw new PaymentException('Payment private key bad format');
-    }
-
-    public function executeCurl($url,$options,$headers)
-    {
-
-    }
 
     /**
      * @param $url
-     * @param $charset
-     * @param bool $post
+     * @param $isPost
+     * @param array $data
+     * @param array $options
+     * @param array $headers
      * @return mixed
      * @throws \Exception
      */
-    public function curl($url,$charset,$post=true) {
+    public function request($url,$isPost,$data=[],$options=[],$headers=[])
+    {
         $ch = curl_init();
-        $params = http_build_query($this->getAttributes());
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_FAILONERROR, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $headers = array('content-type: application/x-www-form-urlencoded;charset=' . $charset);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POST, $post);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        //set url
+        curl_setopt($ch,CURLOPT_URL,$url);
+        curl_setopt($ch,CURLOPT_TIMEOUT,$this->timeout);
+        //定义options
+        if (is_array($options)) {
+            foreach ($options as $const => $option) {
+                if (defined($const)) {
+                    $const_val = constant($const);
+                    switch ($const_val) {
+                        case CURLOPT_HTTPHEADER:
+                        case CURLOPT_POST:
+                        case CURLOPT_POSTFIELDS:
+                        case CURLOPT_URL:
+                            continue;
+                        default:
+                            curl_setopt($ch,$const_val,$option);
+                    }
+                }
+            }
+        }
+        //定义头部信息
+        if (is_array($headers)) {
+            curl_setopt($ch,CURLOPT_HTTPHEADER,$headers);
+        }
+
+        //定义post
+        if ($isPost) {
+            curl_setopt($ch,CURLOPT_POST,true);
+            curl_setopt($ch,CURLOPT_POSTFIELDS,$data);
+        }
+
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
             throw new \Exception(curl_error($ch), 0);
@@ -148,5 +195,6 @@ abstract class API
         }
         curl_close($ch);
         return $response;
+
     }
 }

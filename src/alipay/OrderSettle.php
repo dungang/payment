@@ -19,7 +19,7 @@ namespace dungang\payment\alipay;
  */
 class OrderSettle extends Base
 {
-    public $responseParams = [
+    public $response_params = [
         'trade_no' //支付宝交易号
     ];
     public function init()
